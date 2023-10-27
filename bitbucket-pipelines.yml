@@ -1,17 +1,19 @@
-image: maven:3.9.5
+image: docker:latest
 
 pipelines:
-  default:
-    - parallel:
-        - step:
-            name: Build and Test
-            caches:
-              - maven
-            script:
-              - mvn -B verify --file pom.xml
-            after-script:
-              - pipe: atlassian/checkstyle-report:0.3.0
-        - step:
-            name: Security Scan
-            script:
-              - pipe: atlassian/git-secrets-scan:0.5.1
+  services:
+    - mysql:latest
+
+  stages:
+    - build
+
+  .build:
+    image: maven:3-jdk-17
+    stage: build
+    when: manual
+    script: "mvn clean install -DskipTests"
+    artifacts:
+      paths:
+        - target/*.jar
+    only:
+      - master
