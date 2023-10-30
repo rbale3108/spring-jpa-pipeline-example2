@@ -1,17 +1,15 @@
-image: maven:3-jdk-17
+options:
+  docker: true
 
+image: docker:latest
 pipelines:
-  default:
-    - parallel:
-        - step:
-            name: Build and Test
-            caches:
-              - maven
-            script:
-              - mvn clean install -DskipTests=true --file pom.xml
-            after-script:
-              - pipe: atlassian/checkstyle-report:0.3.0
-        - step:
-            name: Security Scan
-            script:
-              - pipe: atlassian/git-secrets-scan:0.5.1
+  custom:
+    build:
+      - step:
+          image: maven:3.8.3-jdk-11-openj9
+          name: Build
+          script:
+            - mvn clean install -DskiptTests
+          artifacts:
+            paths:
+              - target/*.jar
